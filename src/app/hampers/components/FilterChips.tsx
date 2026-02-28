@@ -34,7 +34,12 @@ export default function FilterChips() {
   return (
     <section className="bg-background py-10 border-b border-border">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="flex gap-3 overflow-x-auto no-scrollbar">
+      <div className="
+  flex gap-3 
+  justify-start md:justify-center
+  overflow-x-auto md:overflow-visible
+  no-scrollbar
+">
           {filters.map((filter) => (
             <button
               key={filter.id}

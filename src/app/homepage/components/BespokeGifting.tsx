@@ -93,7 +93,7 @@ const BespokeGifting = () => {
             </p>
 
             <Link
-              href="/corporate"
+              href="/products"
               className="inline-flex items-center gap-2 text-primary font-medium hover:gap-3 transition-all"
             >
               Explore Corporate Gifting

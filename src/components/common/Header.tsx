@@ -18,7 +18,7 @@ const navLinks: NavLink[] = [
   { id: "nav_occasions", label: "Occasions", href: "#" },
   { id: "nav_hampers", label: "Hampers", href: "#" },
   { id: "nav_offers", label: "Offers", href: "/offers" },
-  { id: "nav_about", label: "About", href: "#" },
+  { id: "nav_about", label: "About", href: "/about" },
 ];
 
 const occasions = [

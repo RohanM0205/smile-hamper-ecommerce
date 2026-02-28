@@ -3,6 +3,7 @@ import FeaturedHampers from "./components/FeaturedHampers";
 import HampersClient from "./components/HampersClient";
 import { supabaseServer } from "@/lib/supabase/server";
 import Footer from "@/components/common/Footer";
+import HamperSearch from "./components/HamperSearch";
 
 export const revalidate = 120;
 
@@ -28,10 +29,12 @@ export type HamperGridItem = {
 export default async function HampersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ filter?: string }>;
+  searchParams: Promise<{ filter?: string; search?: string }>;
 }) {
   const resolvedParams = await searchParams;
+
   const activeFilter = resolvedParams?.filter || "all";
+  const searchQuery = resolvedParams?.search || "";
 
   const supabase = await supabaseServer();
 
@@ -91,6 +94,7 @@ export default async function HampersPage({
       const primaryImage =
         productImages.find((img: { is_primary: boolean }) => img.is_primary)
           ?.image_url ?? productImages[0]?.image_url ?? "";
+
       return {
         id: product.id,
         name: product.name,
@@ -107,13 +111,29 @@ export default async function HampersPage({
     }) ?? [];
 
   /* =====================================================
-     3️⃣ FILTERED PRODUCTS (Parent + Children Logic)
+     3️⃣ SEARCH FILTER (Server Side)
   ===================================================== */
 
-  let filteredHampers = allHampers;
+  let searchableHampers = allHampers;
+
+  if (searchQuery) {
+    const lowerQuery = searchQuery.toLowerCase();
+
+    searchableHampers = allHampers.filter((hamper) =>
+      hamper.name.toLowerCase().includes(lowerQuery) ||
+      hamper.tags?.some((tag) =>
+        tag.toLowerCase().includes(lowerQuery)
+      )
+    );
+  }
+
+  /* =====================================================
+     4️⃣ CATEGORY FILTER (Parent + Children Logic)
+  ===================================================== */
+
+  let filteredHampers = searchableHampers;
 
   if (activeFilter !== "all") {
-    // 1️⃣ Selected Category
     const { data: selectedCategory } = await supabase
       .from("categories")
       .select("id")
@@ -122,7 +142,6 @@ export default async function HampersPage({
       .single();
 
     if (selectedCategory) {
-      // 2️⃣ Child Categories
       const { data: childCategories } = await supabase
         .from("categories")
         .select("id")
@@ -134,7 +153,6 @@ export default async function HampersPage({
         ...(childCategories?.map((c) => c.id) ?? []),
       ];
 
-      // 3️⃣ Get product ids under selected category tree
       const { data: filterRelations } = await supabase
         .from("product_categories")
         .select("product_id")
@@ -143,28 +161,42 @@ export default async function HampersPage({
       const filterProductIds =
         filterRelations?.map((r) => r.product_id) ?? [];
 
-      // 4️⃣ INTERSECTION (Must belong to Hampers + Selected Tree)
       const validProductIds = hampersProductIds.filter((id) =>
         filterProductIds.includes(id)
       );
 
-      filteredHampers = allHampers.filter((p) =>
+      filteredHampers = searchableHampers.filter((p) =>
         validProductIds.includes(p.id)
       );
     }
   }
 
   /* =====================================================
-     4️⃣ RENDER
-     Hero + Featured NEVER change
+     5️⃣ RENDER
   ===================================================== */
 
   return (
     <>
       <div className="pt-20">
+
         {/* Static Sections */}
         <Hero featuredHamper={allHampers[6] ?? null} />
         <FeaturedHampers hampers={allHampers.slice(0, 5)} />
+
+        {/* 🔎 Search Bar */}
+        <HamperSearch />
+
+        {/* Search Info */}
+        {searchQuery && (
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 mt-6">
+            <p className="text-sm text-muted-foreground">
+              Showing results for{" "}
+              <span className="font-medium text-foreground">
+                "{searchQuery}"
+              </span>
+            </p>
+          </div>
+        )}
 
         {/* Dynamic Grid */}
         <HampersClient hampers={filteredHampers} />
