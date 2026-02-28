@@ -44,6 +44,13 @@ Payment Integration:
 - Supabase Row-Level Security implemented
 - Payment verification server-side
 
+<<<<<<< HEAD
 ## 👨‍💻 Author
 Rohan More
 Software Developer - HDFC ERGO
+=======
+
+## 👨‍💻 Author
+Rohan More
+Software Developer - HDFC ERGO
+>>>>>>> b75457a (ReadMe chnages, added more details)
